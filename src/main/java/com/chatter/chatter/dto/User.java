@@ -1,4 +1,4 @@
-package com.chatter.chatter;
+package com.chatter.chatter.dto;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
