@@ -8,18 +8,9 @@ import jakarta.persistence.Id;
 @Entity
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
     private String username;
     private String password;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
+    private String authority;
 
     public String getUsername() {
         return username;
@@ -36,4 +27,10 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public String getAuthority() {
+        return authority;
+    }
+
+    public void setAuthority(String authority) {this.authority = authority;}
 }

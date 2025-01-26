@@ -13,20 +13,17 @@ public class Log {
     private String author;
     private String target;
     private String action;
-    private int actionId;
 
-    public Log(String author, String action, int actionId) {
+    public Log(String author, String action) {
         this.author = author;
         this.target = author;
         this.action = action;
-        this.actionId = actionId;
     }
 
-    public Log(String author, String target,String action, int actionId) {
+    public Log(String author, String target,String action) {
         this.author = author;
         this.target = target;
         this.action = action;
-        this.actionId = actionId;
     }
 
     public Log() {
@@ -41,9 +38,6 @@ public class Log {
         return action;
     }
 
-    public int getactionId() {
-        return actionId;
-    }
 
     public Instant getTimestamp() {
         return timestamp;

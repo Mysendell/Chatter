@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chatter</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+</head>
+<body>
+<header>
+    <h1>Chatter</h1>
+</header>
+<h2>Log Viewer</h2>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Timestamp</th>
+        <th>Author</th>
+        <th>Target</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="log : ${logs}">
+        <td th:text="${log.id}"></td>
+        <td th:text="${log.timestamp}"></td>
+        <td th:text="${log.author}"></td>
+        <td th:text="${log.target}"></td>
+        <td th:text="${log.action}"></td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
