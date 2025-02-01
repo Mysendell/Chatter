@@ -7,7 +7,7 @@ import java.time.Instant;
 @Entity
 public class Log {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Automatically generates IDs
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private final Instant timestamp = Instant.now();
     private String author;

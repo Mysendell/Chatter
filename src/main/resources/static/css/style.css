@@ -1,8 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
 header{
     background-color: #127800;
-    padding: 10px;
+    padding: 0.1px;
+    max-height: 10vh;
     text-align: center;
+    color: white;
 }
 body{
+    font-family: 'Roboto', sans-serif;
     background-color: lightgrey;
+    margin: 0;
+}
+
+.center{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+table{
+    border-collapse: collapse;
+}
+
+table, th, td{
+    border: 1px solid black;
+}
+
+#logs{
+    max-height: 70vh;
+    overflow: auto;
+}
+#logs{
+    max-height: 50vh;
+    overflow: auto;
 }

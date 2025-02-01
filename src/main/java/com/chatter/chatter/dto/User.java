@@ -1,8 +1,6 @@
 package com.chatter.chatter.dto;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 @Entity
@@ -10,7 +8,7 @@ public class User {
     @Id
     private String username;
     private String password;
-    private String authority;
+    private String auth;
 
     public String getUsername() {
         return username;
@@ -28,9 +26,9 @@ public class User {
         this.password = password;
     }
 
-    public String getAuthority() {
-        return authority;
+    public String getAuth() {
+        return auth;
     }
 
-    public void setAuthority(String authority) {this.authority = authority;}
+    public void setAuth(String authority) {this.auth = authority;}
 }

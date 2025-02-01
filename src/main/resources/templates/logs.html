@@ -3,32 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <title>Chatter</title>
-    <link th:href="@{/css/styles.css}" rel="stylesheet">
+    <link th:href="@{../css/style.css}" rel="stylesheet">
 </head>
 <body>
 <header>
     <h1>Chatter</h1>
 </header>
-<h2>Log Viewer</h2>
-<table>
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Timestamp</th>
-        <th>Author</th>
-        <th>Target</th>
-        <th>Action</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="log : ${logs}">
-        <td th:text="${log.id}"></td>
-        <td th:text="${log.timestamp}"></td>
-        <td th:text="${log.author}"></td>
-        <td th:text="${log.target}"></td>
-        <td th:text="${log.action}"></td>
-    </tr>
-    </tbody>
-</table>
+<div class="center">
+    <h2>Log Viewer</h2>
+    <div th:if="${logs.isEmpty()}">
+        <p>No logs found.</p>
+    </div>
+    <div th:if="${logs.size() > 0}" id="logs">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Timestamp</th>
+                <th>Author</th>
+                <th>Target</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="log : ${logs}">
+                <td th:text="${log.id}"></td>
+                <td th:text="${log.timestamp}"></td>
+                <td th:text="${log.author}"></td>
+                <td th:text="${log.target}"></td>
+                <td th:text="${log.action}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 </body>
 </html>

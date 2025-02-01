@@ -6,20 +6,29 @@ import com.chatter.chatter.dto.Log;
 import com.chatter.chatter.dto.User;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private LogRepository logRepository;
-    @Autowired
-    private HttpSession session;
+    private final UserRepository userRepository;
+    private final LogRepository logRepository;
+    private final HttpSession session;
+    private final PasswordEncoder passwordEncoder;
 
-    public void saveUser(User user) {
+    @Autowired
+    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, LogRepository logRepository, HttpSession session) {
+        this.passwordEncoder = passwordEncoder;
+        this.userRepository = userRepository;
+        this.logRepository = logRepository;
+        this.session = session;
+    }
+
+    public void Register(User user) {
         if (userRepository.findByUsername(user.getUsername()).isEmpty()) {
+            user.setAuth("USER");
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
             userRepository.save(user);
             Log log = new Log(user.getUsername(), "Register");
             logRepository.save(log);
@@ -28,16 +37,21 @@ public class UserService {
     }
 
     public void login(User user) {
-        if (userRepository.findByUsernameAndPassword(user.getUsername(), user.getPassword()).isPresent()){
-            System.out.println("Login successful");
-            session.setAttribute("loggedInUser", user.getUsername());
-            Log log = new Log(user.getUsername(), "Login");
-            logRepository.save(log);
-            System.out.println("Welcome " + user.getUsername());
-        } else {
-            System.out.println("Login failed");
+        User foundUser = userRepository.findByUsername(user.getUsername()).orElse(null);
+        if (foundUser != null) {
+            foundUser.setPassword(passwordEncoder.encode(user.getPassword()));
+            if (passwordEncoder.matches(user.getPassword(), foundUser.getPassword())) {
+                System.out.println("Login successful");
+                session.setAttribute("loggedInUser", user.getUsername());
+                Log log = new Log(user.getUsername(), "Login");
+                logRepository.save(log);
+                System.out.println("Welcome " + user.getUsername());
+                return;
+            }
         }
+            System.out.println("Login failed");
     }
+
 
     public void logout() {
         String username = (String) session.getAttribute("loggedInUser");
@@ -55,7 +69,7 @@ public class UserService {
         String username = (String) session.getAttribute("loggedInUser");
         if (username != null) {
             User user = userRepository.findByUsername(username).get();
-            return user.getAuthority().equals(authority);
+            return user.getAuth().equals(authority);
         }
         return false;
     }

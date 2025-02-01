@@ -1,14 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Chatter</title>
-  <link th:href="@{/css/styles.css}" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>Chatter</title>
+    <link th:href="@{../css/style.css}" type="text/css" rel="stylesheet">
 </head>
 <body>
 <header>
-  <h1>Chatter</h1>
+    <h1>Chatter</h1>
 </header>
-  <h2>Start chatting today</h2>
+<div class="center">
+    <h2>Start chatting today!</h2>
+    <h1 th:if="${chats.size() == 0}">You have no chats! Start one Today!!</h1>
+    <div th:if="${chats.size() > 0}" id="chats">
+        <table>
+            <thead>
+            <tr>
+                <th>Chat ID</th>
+                <th>Chat Name</th>
+                <th>Chat Members</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="chat : ${chats}">
+                <td th:text="${chat.getId()}"></td>
+                <td th:text="${chat.getName()}"></td>
+                <td th:text="${chat.getUsers()}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <h2>Create a new chat:</h2>
+    <form method="post" action="/chat">
+        <label for="chatName">Name of the Chat: </label>
+        <input type="text" name="name" placeholder="Chat Name" id="chatName">
+        <label for="chatMembers">Name of Members (separated by a comma): </label>
+        <input type="text" name="usersString" placeholder="Chat Members" id="chatMembers">
+        <button type="submit">Create Chat</button>
+    </form>
+</div>
 </body>
 </html>
