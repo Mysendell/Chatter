@@ -1,33 +1,54 @@
 package com.chatter.chatter.service;
 
-import jakarta.persistence.AttributeConverter;
-import jakarta.persistence.Converter;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.chatter.chatter.dao.ChatRepository;
+import com.chatter.chatter.dto.Chat;
+import com.chatter.chatter.dto.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-@Converter
-public class ChatService implements AttributeConverter<List<String>, String> {
+@Service
+public class ChatService {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ChatRepository chatRepository;
 
-    @Override
-    public String convertToDatabaseColumn(List<String> attribute) {
-        try {
-            return objectMapper.writeValueAsString(attribute);
-        } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("Error converting list to JSON", e);
-        }
+    @Autowired
+    public ChatService(ChatRepository chatRepository) {
+        this.chatRepository = chatRepository;
     }
 
-    @Override
-    public List<String> convertToEntityAttribute(String dbData) {
-        try {
-            return objectMapper.readValue(dbData, List.class);
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Error converting JSON to list", e);
-        }
+    public Set<Chat> getUserChats(String username) {
+        List<Chat> chats = chatRepository.findByUsers_Username(username);
+        return new HashSet<>(chats);
+    }
+
+    public Chat getChatById(int id) {
+        return chatRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentException("Chat not found with id: " + id));
+    }
+
+    public Chat saveChat(Chat chat) {
+        return chatRepository.save(chat);
+    }
+
+    public void userInChat(String username, int chatId) {
+        if(!chatRepository.existsByIdAndUsers_Username(chatId, username))
+            throw new SecurityException("User not in chat");
+    }
+
+    public int createChat(Set<User> users, String name) {
+        Chat chat = new Chat();
+        chat.setName(name);
+        chat.setUsers(users);
+        chatRepository.save(chat);
+        return chat.getId();
+    }
+
+    public Chat getAuthorizedChat(String username, int chatId) {
+        userInChat(username, chatId);
+        return getChatById(chatId);
     }
 }

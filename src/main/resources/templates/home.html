@@ -13,19 +13,18 @@
     <h2>Start chatting today!</h2>
     <h1 th:if="${chats.size() == 0}">You have no chats! Start one Today!!</h1>
     <div th:if="${chats.size() > 0}" id="chats">
+        <h1>Your Chats:</h1>
         <table>
             <thead>
             <tr>
-                <th>Chat ID</th>
                 <th>Chat Name</th>
                 <th>Chat Members</th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="chat : ${chats}">
-                <td th:text="${chat.getId()}"></td>
-                <td th:text="${chat.getName()}"></td>
-                <td th:text="${chat.getUsers()}"></td>
+                <td><a th:text="${chat.getName()}" th:href="@{/chat(id=${chat.getId()})}"></a></td>
+                <td th:text="${chat.getUsersString()}"></td>
             </tr>
             </tbody>
         </table>
@@ -35,7 +34,7 @@
         <label for="chatName">Name of the Chat: </label>
         <input type="text" name="name" placeholder="Chat Name" id="chatName">
         <label for="chatMembers">Name of Members (separated by a comma): </label>
-        <input type="text" name="usersString" placeholder="Chat Members" id="chatMembers">
+        <input type="text" name="userString" placeholder="Chat Members" id="chatMembers">
         <button type="submit">Create Chat</button>
     </form>
 </div>

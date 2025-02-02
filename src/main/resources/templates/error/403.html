@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chatter</title>
+    <link th:href="@{../css/style.css}" rel="stylesheet">
+</head>
+<body>
+<header>
+    <h1>Chatter</h1>
+</header>
+<div class="center">
+    <h1>403</h1>
+    <h2>Access Denied</h2>
+    <p>Sorry, you don't have permission to access this page.</p>
+    <p>Error message:</p>
+    <p th:text="${error}"></p>
+    <a href="javascript:history.back()">Go Back</a>
+</div>
+</body>
+</html>

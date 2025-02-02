@@ -2,9 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Chatter</title>
+    <link th:href="@{../css/style.css}" rel="stylesheet">
 </head>
 <body>
-a
+<header>
+    <h1>Chatter</h1>
+</header>
+<div class="center">
+    <div id="chat">
+        <div id="chat-messages">
+            <div th:each="message : ${messages}" class="message">
+                <span th:text="${#dates.format(message.getTimestamp(), 'dd/MM/yyyy HH:mm')}
+                + ' | '" class="time"></span>
+                <span th:text="${message.author} + ': '"></span><br>
+                <span th:text="'  ' + ${message.content}" class="message-text"></span>
+            </div>
+        </div>
+        <div id="message-form">
+            <input type="text" name="text" placeholder="Type your message here">
+        </div>
+    </div>
+</div>
 </body>
 </html>
