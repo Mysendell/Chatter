@@ -1,8 +1,11 @@
 package com.chatter.chatter.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 public class Chat {
@@ -53,15 +56,14 @@ public class Chat {
     }
 
     public String getUsersString() {
-        StringBuilder sb = new StringBuilder();
-        for (User user : users) {
-            if (!sb.isEmpty()) {
-                sb.append(", ");
-            }
-            sb.append(user.getUsername());
+        if (users == null || users.isEmpty()) {
+            return "";
         }
-        return sb.toString();
+        return users.stream()
+                .map(User::getUsername)
+                .collect(Collectors.joining(", "));
     }
+
 
     public void setUsers(Set<User> users) {
         this.users = users;
@@ -86,4 +88,6 @@ public class Chat {
         this.messages.add(message);
 
     }
+
+
 }

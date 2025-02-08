@@ -6,6 +6,9 @@ header{
     max-height: 10vh;
     text-align: center;
     color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 body{
     font-family: 'Roboto', sans-serif;
@@ -63,13 +66,13 @@ table, th, td{
 #message-form input{
     width: 90%;
     height: 100%;
-    border: none;
+    border-bottom: grey 2px solid;
     padding: 0;
     margin: 0;
 }
 
 #chat-messages{
-    height: 84vh;
+    height: 86vh;
     overflow: auto;
 }
 
@@ -107,9 +110,35 @@ table, th, td{
     align-items: flex-start;
 }
 
-.online-user{
+.user{
     padding-left: 1vw;
     padding-bottom: 1vh;
     padding-top: 0.3vh;
     border-bottom: 1px solid lightgrey;
+}
+
+.back-button{
+    text-decoration: none;
+    font-weight: bold;
+    color: white;
+    font-size: 2em;
+    padding-top: 0.5vh;
+    padding-bottom: 0.5vh;
+}
+
+#chat-controls{
+    background-color: aliceblue;
+    border-right: grey 2px solid;
+    border-top: grey 2px solid;
+    border-bottom: grey 2px solid;
+    overflow: auto;
+}
+
+.offline-user {
+    color: grey;
+    font-style: italic;
+}
+
+#online-users{
+    text-align: center;
 }

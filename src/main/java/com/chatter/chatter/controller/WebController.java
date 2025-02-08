@@ -1,13 +1,17 @@
 package com.chatter.chatter.controller;
 
 import com.chatter.chatter.dto.Chat;
+import com.chatter.chatter.dto.ChatDto;
+import com.chatter.chatter.dto.Log;
 import com.chatter.chatter.dto.User;
 import com.chatter.chatter.service.ChatService;
 import com.chatter.chatter.service.LogService;
 import com.chatter.chatter.service.SessionService;
 import com.chatter.chatter.service.UserService;
+import jakarta.persistence.PreUpdate;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -43,6 +47,8 @@ public class WebController {
 
     @GetMapping("/login")
     public String login() {
+        if(sessionService.isLoggedIn())
+            return "redirect:/home";
         return "login";
     }
 
@@ -52,14 +58,9 @@ public class WebController {
     }
 
     @GetMapping("/home")
-    public String home(
-            Model model,
-            @RequestParam(defaultValue = "0") int page, // Default to the first page
-            @RequestParam(defaultValue = "10") int size // Default size
-    ) {
+    public String home() {
         String username = sessionService.getLoggedInUser();
         sessionService.requireLoggedInUser();
-        model.addAttribute("chats", chatService.getUserChats(username, page, size));
         return "home";
     }
 
@@ -92,13 +93,8 @@ public class WebController {
     }
 
     @GetMapping("/logs")
-    public String logs(
-            Model model,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
-    ) {
+    public String logs() {
         userService.authorizeAdminAccess();
-        model.addAttribute("logs", logService.getAllLogs(page, size));
         return "logs";
     }
 
@@ -113,5 +109,50 @@ public class WebController {
         if (param == null) {
             throw new IllegalArgumentException(errorMessage);
         }
+    }
+
+    @GetMapping("/api/logs")
+    @ResponseBody
+    public Page<Log> getLogs(
+            @RequestParam(defaultValue = "") String action,
+            @RequestParam(defaultValue = "") String target,
+            @RequestParam(defaultValue = "") String author,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size
+    ) {
+        return logService.searchLogs(author, action, target, page, size);
+    }
+
+    @GetMapping("/api/chats")
+    @ResponseBody
+    public Page<ChatDto> searchChats(
+            @RequestParam(defaultValue = "") String username,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<Chat> chats = chatService.searchChats(username, page, size);
+        return chats.map(ChatDto::new);
+    }
+
+    @GetMapping("/api/leave-chat")
+    public void leaveChat(@RequestParam int chatId, @RequestParam String username) {
+        chatService.userInChat(username, chatId);
+        chatService.removeUser(chatId, username);
+    }
+
+    @GetMapping("/api/add-user")
+    public void addUser(
+            @RequestParam int chatId, @RequestParam String username, @RequestParam String author
+    ) {
+        chatService.userInChat(author, chatId);
+        chatService.addUser(chatId, username);
+    }
+
+    @GetMapping("/api/remove-user")
+    public void removeUser(
+            @RequestParam int chatId, @RequestParam String username, @RequestParam String author
+    ) {
+        chatService.userInChat(author, chatId);
+        chatService.removeUser(chatId, username);
     }
 }

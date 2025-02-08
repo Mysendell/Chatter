@@ -7,10 +7,11 @@
 </head>
 <body>
 <header>
-    <h1>Chatter</h1>
+    <a href="/" class="back-button">Chatter</a>
 </header>
 <main>
     <form action="/login" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required><br>
         <label for="password">Password:</label>

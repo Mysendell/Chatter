@@ -9,4 +9,4 @@ import java.time.Instant;
 
 public interface LogRepository extends JpaRepository<Log, Instant> {
     Page<Log> findAll(Pageable pageable);
-}
+    Page<Log> findByAuthorContainingAndActionContainingAndTargetContaining(String author, String action, String target, Pageable pageable);}

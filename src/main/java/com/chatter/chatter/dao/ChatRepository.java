@@ -13,4 +13,5 @@ public interface ChatRepository extends JpaRepository<Chat, Integer> {
     Page<Chat> findByUsers_Username(String username, Pageable pageable);
 
     boolean existsByIdAndUsers_Username(int chatId, String username);
+    Page<Chat> findByUsers_UsernameContaining(String username, Pageable pageable);
 }

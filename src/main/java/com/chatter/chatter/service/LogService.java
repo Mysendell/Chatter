@@ -35,4 +35,9 @@ public class LogService {
         return logRepository.findAll(pageable);
     }
 
+    public Page<Log> searchLogs(String author, String action, String target, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp"));
+        return logRepository.findByAuthorContainingAndActionContainingAndTargetContaining(author, action, target, pageable);
+    }
+
 }

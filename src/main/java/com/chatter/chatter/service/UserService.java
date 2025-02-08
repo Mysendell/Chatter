@@ -33,14 +33,17 @@ public class UserService {
             String rawPassword = user.getPassword();
             user.setPassword(passwordEncoder.encode(rawPassword));
             userRepository.save(user);
+
             Log log = new Log(user.getUsername(), "Register");
             logRepository.save(log);
+
             user.setPassword(rawPassword);
         }
         login(user);
     }
 
     public void login(User user) {
+        sessionService.logout();
         if (isValidUser(user.getUsername(), user.getPassword())) {
             System.out.println("Login successful");
             sessionService.setLoggedInUser(user.getUsername());

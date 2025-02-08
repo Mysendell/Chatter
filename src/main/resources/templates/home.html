@@ -7,50 +7,30 @@
 </head>
 <body>
 <header>
-    <h1>Chatter</h1>
+    <a href="/" class="back-button">Chatter</a>
 </header>
 <main>
     <h2>Start chatting today!</h2>
-    <h1 th:if="${chats.getSize() == 0}">You have no chats! Start one Today!!</h1>
-    <div th:if="${chats.getSize() > 0}" id="chats">
-        <h1>Your Chats:</h1>
-        <table>
-            <thead>
-            <tr>
-                <th>Chat Name</th>
-                <th>Chat Members</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="chat : ${chats.content}">
-                <td><a th:text="${chat.getName()}" th:href="@{/chat(id=${chat.getId()})}"></a></td>
-                <td th:text="${chat.getUsersString()}"></td>
-            </tr>
-            </tbody>
-        </table>
-        <div>
-            <form th:if="${chats.hasNext()}" action="/home" style="display: inline-block;">
-                <input type="hidden" name="page" th:value="${chats.number - 1}">
-                <input type="hidden" name="size" th:value="${chats.getSize}">
-                <input type="submit" value="Next">
-            </form>
-            <span>Page [[${chats.number + 1}]] of [[${chats.totalPages}]]</span>
-            <form th:if="${chats.hasNext()}" action="/home" style="display: inline-block;">
-                <input type="hidden" name="page" th:value="${chats.number + 1}">
-                <input type="hidden" name="size" th:value="${chats.getSize}">
-                <input type="submit" value="Next">
-            </form>
-        </div>
+    <div id="chats">
+
     </div>
 
     <h2>Create a new chat:</h2>
     <form method="post" action="/chat">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
         <label for="chatName">Name of the Chat: </label>
         <input type="text" name="name" placeholder="Chat Name" id="chatName">
         <label for="chatMembers">Name of Members (separated by a comma): </label>
         <input type="text" name="userString" placeholder="Chat Members" id="chatMembers">
         <button type="submit">Create Chat</button>
     </form>
+    <div>
+        <h2>All user currently online</h2>
+        <div id="onlineUsers"></div>
+    </div>
 </main>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+<script th:src="@{../js/chatDisplay.js}"></script>
+<script th:src="@{../js/homeWebSocketHandler.js}"></script>
 </body>
 </html>

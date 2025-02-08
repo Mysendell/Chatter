@@ -7,49 +7,18 @@
 </head>
 <body>
 <header>
-    <h1>Chatter</h1>
+    <a href="/" class="back-button">Chatter</a>
 </header>
-<div class="center" id="log-center">
+<main id="log-center">
     <h2 style="margin-bottom:0; margin-top:0">Log Viewer</h2>
-    <div th:if="${logs.isEmpty()}">
-        <p>No logs found.</p>
+        Search:
+        <input type="text" id="log-search-actions" placeholder="Search actions">
+        <input type="text" id="log-search-target" placeholder="Search Target">
+        <input type="text" id="log-search-author" placeholder="Search Author">
+        <button onclick="search()">Search</button><br>
+    <div id="logs">
     </div>
-    <div th:if="${logs.getSize() > 0}" id="logs">
-        <table>
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Timestamp</th>
-                <th>Author</th>
-                <th>Target</th>
-                <th>Action</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="log : ${logs.content}">
-                <td th:text="${log.id}"></td>
-                <td th:text="${log.timestamp}"></td>
-                <td th:text="${log.author}"></td>
-                <td th:text="${log.target}"></td>
-                <td th:text="${log.action}"></td>
-            </tr>
-            </tbody>
-        </table>
-        <!-- Pagination -->
-        <div>
-            <form th:if="${logs.hasPrevious()}" action="/logs" style="display: inline-block;">
-                <input type="hidden" name="page" th:value="${logs.number - 1}">
-                <input type="hidden" name="size" th:value="${logs.getSize}">
-                <input type="submit" value="Previous">
-            </form>
-            <span>Page [[${logs.number + 1}]] of [[${logs.totalPages}]]</span>
-            <form th:if="${logs.hasNext()}" action="/logs" style="display: inline-block;">
-                <input type="hidden" name="page" th:value="${logs.number + 1}">
-                <input type="hidden" name="size" th:value="${logs.getSize}">
-                <input type="submit" value="Next">
-            </form>
-        </div>
-    </div>
-</div>
+</main>
+<script th:src="@{../js/logSearch.js}"></script>
 </body>
 </html>

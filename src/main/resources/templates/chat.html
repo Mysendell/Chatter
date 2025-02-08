@@ -7,7 +7,7 @@
 </head>
 <body>
     <header>
-        <h1>Chatter</h1>
+        <a href="/" class="back-button">Chatter</a>
     </header>
     <main id="chat-container">
         <div id="user-online-table">
@@ -24,11 +24,19 @@
                 </div>
             </div>
             <div id="message-form">
-                <input type="text" name="text" placeholder="Type your message here">
+                <input type="text" id="message-input" placeholder="Type your message here">
+                <button id="send-message-button" onclick="sendMessage()">Send</button>
             </div>
+        </div>
+        <div id="chat-controls">
+            <button id="leave-chat-button" onclick="leaveChat()">Leave Chat</button><br><br>
+            <input type="text" id="user-input" placeholder="Enter username"><br>
+            <button id="add-user-button" onclick="addUser()">Add user</button>
+            <button id="remove-user-button" onclick="removeUser()">Remove user</button>
         </div>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
-    <script th:src="@{../js/websocketHandler.js}"></script>
+    <script th:src="@{../js/chatWebSocketHandler.js}"></script>
+    <script th:src="@{../js/manageUsersChat.js}"></script>
 </body>
 </html>

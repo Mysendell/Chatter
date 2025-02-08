@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
@@ -55,4 +56,35 @@ public class ChatService {
         userInChat(username, chatId);
         return getChatById(chatId);
     }
+
+    public Page<Chat> searchChats(String username, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return chatRepository.findByUsers_UsernameContaining(username, pageable);
+    }
+
+    public void removeUser(int chatId, String username){
+        Chat chat = getChatById(chatId);
+        HashSet<User> users = new HashSet<>(chat.getUsers());
+        users.removeIf(user -> user.getUsername().equals(username));
+        if(chat.getUsers().isEmpty())
+            chatRepository.deleteById(chatId);
+        else
+            chat.setUsers(new HashSet<>(users));
+        chatRepository.save(chat);
+    }
+
+    public void addUser(int chatId, String username){
+        Chat chat = getChatById(chatId);
+        HashSet<User> users = new HashSet<>(chat.getUsers());
+        users.add(new User(username));
+        chat.setUsers(new HashSet<>(users));
+        chatRepository.save(chat);
+    }
+
+    @Transactional
+    public Set<String> getAllUsersInChat(int chatId) {
+        Chat chat = getChatById(chatId);
+        return chat.getUsers().stream().map(User::getUsername).collect(java.util.stream.Collectors.toSet());
+    }
+
 }
