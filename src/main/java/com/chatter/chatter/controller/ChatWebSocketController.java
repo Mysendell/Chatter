@@ -10,7 +10,6 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -21,12 +20,12 @@ import com.chatter.chatter.dto.ChatUserStatus;
 @Controller
 public class ChatWebSocketController {
 
-    // Store online users by chat ID
-    private final ConcurrentMap<Integer, ConcurrentMap<String, Boolean>> usersStatusPerChat = new ConcurrentHashMap<>();
+
+    private final ConcurrentMap<Integer, ConcurrentMap<String, Boolean>> usersStatus = new ConcurrentHashMap<>();
     private final SimpMessagingTemplate messagingTemplate;
     private final ConcurrentMap<String, Long> lastHeartbeatTimestamps = new ConcurrentHashMap<>();
     private final ChatService chatService;
-    private final MessageService messageService; // Inject MessageService
+    private final MessageService messageService;
 
     public ChatWebSocketController(SimpMessagingTemplate messagingTemplate, ChatService chatService, MessageService messageService) {
         this.messagingTemplate = messagingTemplate;
@@ -35,37 +34,56 @@ public class ChatWebSocketController {
     }
 
 
-    public ConcurrentMap<String, Boolean> getAllUsersStatus(int chatId) {
-        usersStatusPerChat.putIfAbsent(chatId, new ConcurrentHashMap<>());
-        ConcurrentMap<String, Boolean> usersStatus = usersStatusPerChat.get(chatId);
-
-        Set<String> allUsers = chatService.getAllUsersInChat(chatId); // Hypothetical method
-
-        for (String user : allUsers) {
-            usersStatus.putIfAbsent(user, false); // Default to false (offline)
+    public void getAllUsersStatus(int chatId) {
+        if (!usersStatus.containsKey(chatId)) {
+            usersStatus.putIfAbsent(chatId, new ConcurrentHashMap<>());
         }
+
+        ConcurrentMap<String, Boolean> usersStatus = this.usersStatus.get(chatId);
+        Set<String> allUsers;
+        if (chatId != 0) {
+            allUsers = chatService.getAllUsersInChat(chatId);
+            for (String user : allUsers) {
+                usersStatus.putIfAbsent(user, false);
+            }
+        }
+    }
+
+
+    @MessageMapping("/chat/online")
+    @SendTo("/topic/online")
+    public ConcurrentMap<Integer, ConcurrentMap<String, Boolean>> markUserOnline(ChatUserStatus status) {
+        getAllUsersStatus(status.getChatId());
+
+        usersStatus.get(status.getChatId()).put(status.getUsername(), true);
+
+        messagingTemplate.convertAndSend(
+                "/topic/chat/" + status.getChatId() + "/online",
+                usersStatus.get(status.getChatId())
+        );
 
         return usersStatus;
     }
 
-    @MessageMapping("/chat/online")
-    @SendTo("/topic/online")
-    public ConcurrentMap<String, Boolean> markUserOnline(ChatUserStatus status) {
-        getAllUsersStatus(status.getChatId());
-        usersStatusPerChat.get(status.getChatId()).put(status.getUsername(), true); // Mark user as online
-        messagingTemplate.convertAndSend("/topic/chat/" + status.getChatId() + "/online", usersStatusPerChat.get(status.getChatId()));
-        return usersStatusPerChat.get(status.getChatId());
-    }
 
 
     @MessageMapping("/chat/offline")
     @SendTo("/topic/online")
-    public ConcurrentMap<String, Boolean> markUserOffline(ChatUserStatus status) {
-        usersStatusPerChat.putIfAbsent(status.getChatId(), new ConcurrentHashMap<>());
-        usersStatusPerChat.get(status.getChatId()).put(status.getUsername(), false); // Mark user as offline
-        messagingTemplate.convertAndSend("/topic/chat/" + status.getChatId() + "/online", usersStatusPerChat.get(status.getChatId()));
-        return usersStatusPerChat.get(status.getChatId());
+    public ConcurrentMap<Integer, ConcurrentMap<String, Boolean>> markUserOffline(ChatUserStatus status) {
+        getAllUsersStatus(status.getChatId());
+
+        if(status.getChatId() != 0)
+            usersStatus.get(status.getChatId()).put(status.getUsername(), false);
+        else
+            usersStatus.get(status.getChatId()).remove(status.getUsername());
+        messagingTemplate.convertAndSend(
+                "/topic/chat/" + status.getChatId() + "/online",
+                usersStatus.get(status.getChatId())
+        );
+
+        return usersStatus;
     }
+
 
 
     @MessageMapping("/chat/message")
@@ -88,10 +106,10 @@ public class ChatWebSocketController {
         lastHeartbeatTimestamps.put(username + "-" + chatId, System.currentTimeMillis());
     }
 
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedRate = 10000)
     public void detectOfflineUsers() {
         long now = System.currentTimeMillis();
-        long cutoff = 30000;
+        long cutoff = 10000;
 
         lastHeartbeatTimestamps.forEach((key, timestamp) -> {
             if (now - timestamp > cutoff) {
@@ -99,9 +117,13 @@ public class ChatWebSocketController {
                 String username = parts[0];
                 Integer chatId = Integer.valueOf(parts[1]);
 
-                if (usersStatusPerChat.containsKey(chatId)) {
-                    usersStatusPerChat.get(chatId).remove(username);
-                    messagingTemplate.convertAndSend("/topic/chat/" + chatId + "/online", usersStatusPerChat.get(chatId));
+                if (usersStatus.containsKey(chatId)) {
+                    if(chatId != 0)
+                        usersStatus.get(chatId).put(username, false);
+                    else
+                        usersStatus.get(chatId).remove(username);
+                    messagingTemplate.convertAndSend("/topic/chat/" + chatId + "/online", usersStatus.get(chatId));
+                    messagingTemplate.convertAndSend("/topic/online", usersStatus);
                     lastHeartbeatTimestamps.remove(key);
                 }
 

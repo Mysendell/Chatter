@@ -91,7 +91,8 @@ function updateUsersList(usersStatus) {
 
     usersListElement.innerHTML = '';
 
-    for (const [username, isOnline] of Object.entries(usersStatus)) {
+    for(const users of Object.values(usersStatus)) {
+    for (const [username, isOnline] of Object.entries(users)) {
         if (!isOnline) {
             continue;
         }
@@ -100,6 +101,7 @@ function updateUsersList(usersStatus) {
         userElement.classList.add('user');
 
         usersListElement.appendChild(userElement);
+    }
     }
 }
 
