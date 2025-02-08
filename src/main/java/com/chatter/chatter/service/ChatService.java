@@ -4,6 +4,9 @@ import com.chatter.chatter.dao.ChatRepository;
 import com.chatter.chatter.dto.Chat;
 import com.chatter.chatter.dto.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -20,10 +23,11 @@ public class ChatService {
         this.chatRepository = chatRepository;
     }
 
-    public Set<Chat> getUserChats(String username) {
-        List<Chat> chats = chatRepository.findByUsers_Username(username);
-        return new HashSet<>(chats);
+    public Page<Chat> getUserChats(String username, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return chatRepository.findByUsers_Username(username, pageable);
     }
+
 
     public Chat getChatById(int id) {
         return chatRepository.findById(id).orElseThrow(() ->

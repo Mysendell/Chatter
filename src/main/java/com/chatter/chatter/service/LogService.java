@@ -3,6 +3,10 @@ package com.chatter.chatter.service;
 import com.chatter.chatter.dao.LogRepository;
 import com.chatter.chatter.dto.Log;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,7 +30,9 @@ public class LogService {
         logRepository.save(log);
     }
 
-    public List<Log> getAllLogs() {
-        return logRepository.findAll();
+    public Page<Log> getAllLogs(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp"));
+        return logRepository.findAll(pageable);
     }
+
 }

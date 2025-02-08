@@ -1,25 +1,17 @@
-package com.chatter.chatter;
+package com.chatter.chatter.controller;
 
-import com.chatter.chatter.dao.ChatRepository;
-import com.chatter.chatter.dao.LogRepository;
-import com.chatter.chatter.dao.UserRepository;
 import com.chatter.chatter.dto.Chat;
-import com.chatter.chatter.dto.Log;
-import com.chatter.chatter.dto.Message;
 import com.chatter.chatter.dto.User;
 import com.chatter.chatter.service.ChatService;
 import com.chatter.chatter.service.LogService;
 import com.chatter.chatter.service.SessionService;
 import com.chatter.chatter.service.UserService;
-import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
 
@@ -41,7 +33,10 @@ public class WebController {
     }
 
     @PostMapping("/login")
-    public String handleLogin(@ModelAttribute User user) {
+    public String handleLogin(@Valid @ModelAttribute User user, BindingResult result) {
+        if (result.hasErrors()) {
+            return "login";
+        }
         userService.Register(user);
         return "redirect:/home";
     }
@@ -57,17 +52,22 @@ public class WebController {
     }
 
     @GetMapping("/home")
-    public String home(Model model) {
+    public String home(
+            Model model,
+            @RequestParam(defaultValue = "0") int page, // Default to the first page
+            @RequestParam(defaultValue = "10") int size // Default size
+    ) {
         String username = sessionService.getLoggedInUser();
-        requireLoggedInUser();
-        model.addAttribute("chats", chatService.getUserChats(username));
+        sessionService.requireLoggedInUser();
+        model.addAttribute("chats", chatService.getUserChats(username, page, size));
         return "home";
     }
+
 
     @GetMapping("/chat")
     public String chat(Model model, @RequestParam(value = "id", required = false) Integer id) {
         requireNonNull(id, "Chat id must be provided");
-        requireLoggedInUser();
+        sessionService.requireLoggedInUser();
         String username = sessionService.getLoggedInUser();
         Chat chat = chatService.getAuthorizedChat(username, id);
         model.addAttribute("messages", chat.getMessages());
@@ -92,17 +92,22 @@ public class WebController {
     }
 
     @GetMapping("/logs")
-    public String logs(Model model) {
+    public String logs(
+            Model model,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
         userService.authorizeAdminAccess();
-        model.addAttribute("logs", logService.getAllLogs());
+        model.addAttribute("logs", logService.getAllLogs(page, size));
         return "logs";
     }
 
-    public void requireLoggedInUser() {
-        if (!sessionService.isLoggedIn()) {
-            throw new SecurityException("User must be logged in");
-        }
+    @GetMapping("/api/current-user")
+    @ResponseBody
+    public String getCurrentUser() {
+        return sessionService.getLoggedInUser();
     }
+
 
     public void requireNonNull(Object param, String errorMessage) {
         if (param == null) {

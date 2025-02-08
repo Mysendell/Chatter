@@ -9,13 +9,14 @@
 <header>
     <h1>Chatter</h1>
 </header>
-<div class="center">
+<main>
     <h1>400</h1>
     <h2>Bad Request</h2>
     <p>Sorry, the request you made was invalid.</p>
     <p>Error message:</p>
     <p th:text="${error}"></p>
     <a href="javascript:history.back()">Go Back</a>
-</div>
+    <a th:href="@{/}">Go to starting page</a>
+</main>
 </body>
 </html>

@@ -13,7 +13,7 @@ body{
     margin: 0;
 }
 
-.center{
+main{
     height: 90vh;
     display: flex;
     justify-content: center;
@@ -34,13 +34,15 @@ table, th, td{
     overflow: auto;
 }
 #logs{
-    max-height: 50vh;
+    max-height: 90vh;
     overflow: auto;
+    text-align: center;
 }
 
 #chats{
     max-height: 40vh;
     overflow: auto;
+    text-align: center;
 }
 
 #chat{
@@ -85,4 +87,29 @@ table, th, td{
 
 .message-text{
     padding-left: 1vw;
+}
+
+#log-center{
+    justify-content: flex-start;
+}
+
+#user-online-table{
+    height: 84vh;
+    background-color: aliceblue;
+    border-left: grey 2px solid;
+    border-top: grey 2px solid;
+    border-bottom: grey 2px solid;
+    overflow: auto;
+}
+
+#chat-container{
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+.online-user{
+    padding-left: 1vw;
+    padding-bottom: 1vh;
+    padding-top: 0.3vh;
+    border-bottom: 1px solid lightgrey;
 }

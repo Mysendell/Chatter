@@ -29,4 +29,10 @@ public class SessionService {
     public void setLoggedInUser(String username) {
         session.setAttribute("loggedInUser", username);
     }
+
+    public void requireLoggedInUser() {
+        if (!isLoggedIn()) {
+            throw new SecurityException("User must be logged in");
+        }
+    }
 }

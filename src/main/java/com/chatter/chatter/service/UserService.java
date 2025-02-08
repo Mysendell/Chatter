@@ -30,28 +30,32 @@ public class UserService {
 
     public void Register(User user) {
         if (userRepository.findByUsername(user.getUsername()).isEmpty()) {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            String rawPassword = user.getPassword();
+            user.setPassword(passwordEncoder.encode(rawPassword));
             userRepository.save(user);
             Log log = new Log(user.getUsername(), "Register");
             logRepository.save(log);
+            user.setPassword(rawPassword);
         }
         login(user);
     }
 
     public void login(User user) {
-        User foundUser = userRepository.findByUsername(user.getUsername()).orElse(null);
-        if (foundUser != null) {
-            foundUser.setPassword(passwordEncoder.encode(user.getPassword()));
-            if (passwordEncoder.matches(user.getPassword(), foundUser.getPassword())) {
-                System.out.println("Login successful");
-                sessionService.setLoggedInUser(user.getUsername());
-                Log log = new Log(user.getUsername(), "Login");
-                logRepository.save(log);
-                System.out.println("Welcome " + user.getUsername());
-                return;
-            }
-        }
+        if (isValidUser(user.getUsername(), user.getPassword())) {
+            System.out.println("Login successful");
+            sessionService.setLoggedInUser(user.getUsername());
+            Log log = new Log(user.getUsername(), "Login");
+            logRepository.save(log);
+            System.out.println("Welcome " + user.getUsername());
+        } else {
             System.out.println("Login failed");
+        }
+    }
+
+
+    public boolean isValidUser(String username, String rawPassword) {
+        User foundUser = userRepository.findByUsername(username).orElse(null);
+        return foundUser != null && passwordEncoder.matches(rawPassword, foundUser.getPassword());
     }
 
 
@@ -75,6 +79,7 @@ public class UserService {
         }
         return false;
     }
+
     public Set<User> getUsersFromString(String usersString) {
         Set<User> users = new HashSet<>();
         String[] usernames = usersString.split(",");
