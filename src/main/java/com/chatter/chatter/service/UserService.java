@@ -85,7 +85,7 @@ public class UserService {
 
     public Set<User> getUsersFromString(String usersString) {
         Set<User> users = new HashSet<>();
-        String[] usernames = usersString.split(",");
+        String[] usernames = usersString.replaceAll("\\s+", "").split(",");
         for (String username : usernames) {
             userRepository.findByUsername(username).ifPresent(users::add);
         }

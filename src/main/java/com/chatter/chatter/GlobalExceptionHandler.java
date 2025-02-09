@@ -25,4 +25,11 @@ public class GlobalExceptionHandler {
         model.addAttribute("error", e.getMessage());
         return "error/bad-request";
     }
+
+
+    @ExceptionHandler(Exception.class)
+    public String handleException(Exception e, Model model) {
+        model.addAttribute("error", e.getMessage());
+        return "error/error";
+    }
 }

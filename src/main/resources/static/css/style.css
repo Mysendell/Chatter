@@ -142,3 +142,14 @@ table, th, td{
 #online-users{
     text-align: center;
 }
+
+.new-message::before {
+    content: '';
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    background-color: black;
+    border-radius: 50%;
+    margin-right: 0.5vw;
+    vertical-align: middle;
+}

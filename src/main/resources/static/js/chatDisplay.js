@@ -1,7 +1,9 @@
 const chatResultsElement = document.getElementById("chats");
+const chatSearchInputElement = document.getElementById("chat-search-input");
+const userSearchInputElement = document.getElementById("user-search-input");
 
-function fetchChats(username, page = 0, size = 10) {
-    fetch(`/api/chats?username=${username}&page=${page}&size=${size}`)
+function fetchChats(page = 0, chat="", userList=[], size=5) {
+    fetch(`/api/chats?page=${page}&size=${size}&chat=${chat}&userList=${userList}`)
         .then(response => response.json())
         .then(data => displayChats(data.content, data.number, data.totalPages)); // Pass pagination data
 }
@@ -30,6 +32,7 @@ function displayChats(chatData, currentPage, totalPages) {
             <td>${chat.usersString}</td>
         </tr>
         `;
+        initializeNotifications(chat.id)
     }
 
     resultsHTML += `
@@ -56,7 +59,24 @@ function displayChats(chatData, currentPage, totalPages) {
 
 async function changeChatPage(newPage=0) {
     const username = await fetch('/api/current-user').then((response) => response.text());
-    fetchChats(username, newPage);
+    const chatInputElement = chatSearchInputElement.value;
+    const userSearchInputElement = document.getElementById("user-search-input");
+    let userList = [];
+    if(userSearchInputElement.value !== "")
+        userList = userSearchInputElement.value.split(",").map(user => user.trim());
+    if(!userList.includes(username))
+        userList.push(username);
+    fetchChats(newPage, chatInputElement, userList);
 }
 
-changeChatPage();
+async function initializeNotifications(chatId){
+    const username = await fetch('/api/current-user').then((response) => response.text());
+    notifications = await fetch(`/api/notifications?username=${username}&chatId=${chatId}`).then((response) => response.json());
+    for(const notification of notifications){
+        displayNotification(notification);
+    }
+}
+
+window.addEventListener('load', async () => {
+    changeChatPage();
+})

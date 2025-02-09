@@ -5,6 +5,7 @@ import com.chatter.chatter.dto.Message;
 import com.chatter.chatter.dto.MessageDto;
 import com.chatter.chatter.service.ChatService;
 import com.chatter.chatter.service.MessageService;
+import com.chatter.chatter.service.NotificationService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -26,12 +27,15 @@ public class ChatWebSocketController {
     private final ConcurrentMap<String, Long> lastHeartbeatTimestamps = new ConcurrentHashMap<>();
     private final ChatService chatService;
     private final MessageService messageService;
+    private final NotificationService notificationService;
 
-    public ChatWebSocketController(SimpMessagingTemplate messagingTemplate, ChatService chatService, MessageService messageService) {
-        this.messagingTemplate = messagingTemplate;
+    public ChatWebSocketController(SimpMessagingTemplate messagingTemplate, ChatService chatService, MessageService messageService, NotificationService notificationService) {
         this.chatService = chatService;
         this.messageService = messageService;
+        this.notificationService = notificationService;
+        this.messagingTemplate = messagingTemplate;
     }
+
 
 
     public void getAllUsersStatus(int chatId) {
@@ -95,6 +99,8 @@ public class ChatWebSocketController {
         Message messagedb = new Message(chat, content, author);
         messageService.saveMessage(messagedb);
 
+        notificationService.createNotificationsForChat(messagedb, chat);
+
         messagingTemplate.convertAndSend("/topic/chat/" + chatId + "/message", message);
     }
 
@@ -106,10 +112,10 @@ public class ChatWebSocketController {
         lastHeartbeatTimestamps.put(username + "-" + chatId, System.currentTimeMillis());
     }
 
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRate = 1000)
     public void detectOfflineUsers() {
         long now = System.currentTimeMillis();
-        long cutoff = 10000;
+        long cutoff = 1000;
 
         lastHeartbeatTimestamps.forEach((key, timestamp) -> {
             if (now - timestamp > cutoff) {
@@ -129,6 +135,14 @@ public class ChatWebSocketController {
 
             }
         });
+    }
+    
+    public void removeUser(int chatId, String username){
+        getAllUsersStatus(chatId);
+        usersStatus.get(chatId).remove(username);
+        messagingTemplate.convertAndSend("/topic/chat/" + chatId + "/online", usersStatus.get(chatId));
+        messagingTemplate.convertAndSend("/topic/chat/" + username + "/removed", "");
+        messagingTemplate.convertAndSend("/topic/online", usersStatus);
     }
 
 }

@@ -7,10 +7,16 @@
 </head>
 <body>
 <header>
-    <a href="/" class="back-button">Chatter</a>
+    <a href="/home" class="back-button">Chatter</a>
 </header>
 <main>
     <h2>Start chatting today!</h2>
+    <div id="chat-search">
+        <h3>Search for a chat by name or user</h3>
+        <input type="text" id="chat-search-input" placeholder="Search for a chat">
+        <input type="text" id="user-search-input" placeholder="Search for users, separated by comma">
+        <button onclick="changeChatPage()">Search</button>
+    </div><br>
     <div id="chats">
 
     </div>

@@ -9,13 +9,14 @@ async function connect() {
         webSocketFactory: () => socket,
         reconnectDelay: 5000,
     });
-
+    const username = await fetch('/api/current-user').then((response) => response.text());
+    console.log("Trying to connect to WebSocket with username: " + username + "")
     stompClient.onConnect = async () => {
         const chatId = new URLSearchParams(window.location.search).get('id');
 
         stompClient.subscribe(`/topic/chat/${chatId}/online`, (response) => {
             const usersStatus = JSON.parse(response.body);
-            updateUsersList(usersStatus); // Update the user list dynamically
+            updateUsersList(usersStatus);
         });
 
         stompClient.subscribe(`/topic/chat/${chatId}/message`, (response) => {
@@ -23,9 +24,14 @@ async function connect() {
             receiveMessage(message);
         })
 
-        try {
-            const username = await fetch('/api/current-user').then((response) => response.text());
+        stompClient.subscribe(`/topic/chat/${username}/removed`, async (response) => {
+            clearHeartbeat();
+            await sendOfflineSignal();
+            window.location.href = '/home';
+        })
 
+        try {
+            console.log('Sending online signal');
             stompClient.publish({
                 destination: '/app/chat/online',
                 body: JSON.stringify({ chatId, username }),
@@ -39,11 +45,6 @@ async function connect() {
 
     stompClient.onStompError = (error) => {
         console.error('STOMP error:', error);
-    };
-
-    stompClient.onDisconnect = async () => {
-        clearHeartbeat();
-        await sendOfflineSignal();
     };
 
     stompClient.activate();
@@ -64,11 +65,12 @@ function startHeartbeat(chatId, username) {
         body: JSON.stringify({ chatId, username }),
     });
     heartbeatInterval = setInterval(() => {
+        console.log('Sending heartbeat');
         stompClient.publish({
             destination: '/app/chat/heartbeat',
             body: JSON.stringify({ chatId, username }),
         });
-    }, 10000);
+    }, 500);
 }
 
 function clearHeartbeat() {
@@ -150,7 +152,15 @@ function receiveMessage(message) {
 
     const timestampSpan = document.createElement('span');
     timestampSpan.classList.add('time');
-    timestampSpan.textContent = new Date(message.timestamp).toLocaleTimeString() + ' | ';
+    timestampSpan.textContent = new Date(message.timestamp).toLocaleString('en-US', {
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
+    timestampSpan.textContent += ' | ';
     messageDiv.appendChild(timestampSpan);
 
     const authorSpan = document.createElement('span');

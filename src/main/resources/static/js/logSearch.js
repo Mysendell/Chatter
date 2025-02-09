@@ -61,18 +61,11 @@ function makeTable(tableData, currentPage, totalPages) {
     logtableElement.innerHTML = tableHTML; // Insert the generated table into the element
 }
 
-function changePage(newPage) {
+function changePage(newPage=0) {
     let author = authorInput.value;
     let target = targetInput.value;
     let action = actionInput.value;
     fetchLogs(author, target, action, newPage); // Call fetchLogs with updated page
 }
 
-function search() {
-    let author = authorInput.value;
-    let target = targetInput.value;
-    let action = actionInput.value;
-    fetchLogs(author, target, action, 0); // Start search from page 0
-}
-
-search()
+changePage()

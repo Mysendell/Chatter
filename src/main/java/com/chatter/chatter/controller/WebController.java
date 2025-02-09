@@ -1,22 +1,18 @@
 package com.chatter.chatter.controller;
 
-import com.chatter.chatter.dto.Chat;
-import com.chatter.chatter.dto.ChatDto;
-import com.chatter.chatter.dto.Log;
-import com.chatter.chatter.dto.User;
-import com.chatter.chatter.service.ChatService;
-import com.chatter.chatter.service.LogService;
-import com.chatter.chatter.service.SessionService;
-import com.chatter.chatter.service.UserService;
+import com.chatter.chatter.dto.*;
+import com.chatter.chatter.service.*;
 import jakarta.persistence.PreUpdate;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Set;
 
 @Controller
@@ -27,13 +23,20 @@ public class WebController {
     private final SessionService sessionService;
     private final ChatService chatService;
     private final LogService logService;
+    private final NotificationService notificationService;
+    private final ChatWebSocketController chatWebSocketController;
 
     @Autowired
-    public WebController(LogService logService,SessionService sessionService, UserService userService, ChatService chatService) {
+    public WebController(
+            LogService logService, SessionService sessionService,
+            UserService userService, ChatService chatService,
+            NotificationService notificationService, ChatWebSocketController chatWebSocketController) {
         this.userService = userService;
         this.sessionService = sessionService;
         this.chatService = chatService;
         this.logService = logService;
+        this.notificationService = notificationService;
+        this.chatWebSocketController = chatWebSocketController;
     }
 
     @PostMapping("/login")
@@ -79,7 +82,8 @@ public class WebController {
     public String createChat(@RequestParam("name") String name, @RequestParam("userString") String usersString) {
         Set<User> users = userService.getUsersFromString(usersString);
         String username = sessionService.getLoggedInUser();
-        users.add(userService.getUserByUsername(username));
+        if(users.contains(userService.getUserByUsername(username)))
+            users.add(userService.getUserByUsername(username));
         int id = chatService.createChat(users, name);
         logService.saveLog(username, usersString,"Create chat");
         return "redirect:/chat?id=" + id;
@@ -126,33 +130,54 @@ public class WebController {
     @GetMapping("/api/chats")
     @ResponseBody
     public Page<ChatDto> searchChats(
-            @RequestParam(defaultValue = "") String username,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "") String chat,
+            @RequestParam(defaultValue = "") List<String> userList
     ) {
-        Page<Chat> chats = chatService.searchChats(username, page, size);
+        Page<Chat> chats = chatService.searchChats(page, size, chat, userList);
         return chats.map(ChatDto::new);
     }
 
     @GetMapping("/api/leave-chat")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void leaveChat(@RequestParam int chatId, @RequestParam String username) {
         chatService.userInChat(username, chatId);
         chatService.removeUser(chatId, username);
+        logService.saveLog(username,"Left chat: " + chatId);
+        chatWebSocketController.removeUser(chatId, username);
     }
 
     @GetMapping("/api/add-user")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void addUser(
             @RequestParam int chatId, @RequestParam String username, @RequestParam String author
     ) {
         chatService.userInChat(author, chatId);
         chatService.addUser(chatId, username);
+        logService.saveLog(author, username,"Add user");
     }
 
     @GetMapping("/api/remove-user")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeUser(
             @RequestParam int chatId, @RequestParam String username, @RequestParam String author
     ) {
         chatService.userInChat(author, chatId);
         chatService.removeUser(chatId, username);
+        logService.saveLog(author, username,"Remove user");
+        chatWebSocketController.removeUser(chatId, username);
+    }
+
+    @GetMapping("/api/mark-notifications-seen")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void markNotificationsAsSeen(@RequestParam int chatId, @RequestParam String username) {
+        notificationService.markNotificationsAsSeen(username, chatId);
+    }
+
+    @GetMapping("api/notifications")
+    @ResponseBody
+    public List<NotificationDto> getNotifications(@RequestParam String username, @RequestParam int chatId) {
+        return notificationService.getUnreadNotifications(username, chatId);
     }
 }

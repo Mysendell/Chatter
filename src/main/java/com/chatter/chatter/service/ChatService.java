@@ -57,9 +57,10 @@ public class ChatService {
         return getChatById(chatId);
     }
 
-    public Page<Chat> searchChats(String username, int page, int size) {
+    public Page<Chat> searchChats(int page, int size, String chat, List<String> users) {
         Pageable pageable = PageRequest.of(page, size);
-        return chatRepository.findByUsers_UsernameContaining(username, pageable);
+        long usernamesSize = users.size();
+        return chatRepository.findByNameContainingAndUsers_UsernameIntersection(chat, users, usernamesSize, pageable);
     }
 
     public void removeUser(int chatId, String username){

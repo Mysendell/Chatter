@@ -25,7 +25,6 @@ async function addUser(){
         if (!response.ok) {
             throw new Error('Failed to call /api/add-user: ' + response.statusText);
         }
-        window.location.href = '/home';
     } catch (error) {
         console.error('Error adding to chat:', error);
     }
@@ -39,8 +38,14 @@ async function removeUser(){
         if (!response.ok) {
             throw new Error('Failed to call /api/add-user: ' + response.statusText);
         }
-        window.location.href = '/home';
     } catch (error) {
         console.error('Error adding to chat:', error);
     }
 }
+
+async function markNotificationsAsSeen(chatId) {
+    const username = await fetch('/api/current-user').then((response) => response.text());
+    await fetch(`/api/mark-notifications-seen?chatId=${chatId}&username=${username}`, { method: 'GET' });
+}
+
+markNotificationsAsSeen(chatId);

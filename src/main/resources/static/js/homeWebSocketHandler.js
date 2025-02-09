@@ -16,6 +16,11 @@ async function connect() {
             const usersStatus = JSON.parse(response.body);
             updateUsersList(usersStatus);
         });
+        const username = await fetch('/api/current-user').then((response) => response.text());
+        stompClient.subscribe(`/topic/user/${username}/notifications`, (response) => {
+            const notification = JSON.parse(response.body);
+            displayNotification(notification);
+        });
         try {
             const username = await fetch('/api/current-user').then((response) => response.text());
 
@@ -61,7 +66,7 @@ function startHeartbeat(chatId, username) {
             destination: '/app/chat/heartbeat',
             body: JSON.stringify({ chatId, username }),
         });
-    }, 10000);
+    }, 500);
 }
 
 function clearHeartbeat() {
@@ -102,6 +107,15 @@ function updateUsersList(usersStatus) {
 
         usersListElement.appendChild(userElement);
     }
+    }
+}
+
+function displayNotification(notification) {
+    console.log(notification);
+    const chatResultsElement = document.getElementById("chats");
+    const chatItem = chatResultsElement.querySelector(`a[href="/chat?id=${notification.chatId}"]`);
+    if (chatItem) {
+        chatItem.classList.add("new-message");
     }
 }
 
