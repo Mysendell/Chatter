@@ -30,10 +30,11 @@
         <input type="text" name="userString" placeholder="Chat Members" id="chatMembers">
         <button type="submit">Create Chat</button>
     </form>
-    <div>
+    <div style="border-bottom: grey 2px solid; padding-bottom: 1vh">
         <h2>All user currently online</h2>
         <div id="onlineUsers"></div>
     </div>
+    <a href="/logout">Click here to Logout</a>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
 <script th:src="@{../js/chatDisplay.js}"></script>
