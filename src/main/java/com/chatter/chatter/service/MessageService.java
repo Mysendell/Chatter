@@ -5,6 +5,10 @@ import com.chatter.chatter.dto.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service class responsible for handling operations related to messages.
+ * Provides methods to save messages to the repository.
+ */
 @Service
 public class MessageService {
 
@@ -15,7 +19,11 @@ public class MessageService {
         this.messageRepository = messageRepository;
     }
 
-    public Message saveMessage(Message message) {
-        return messageRepository.save(message);
+    /**
+     * Saves a message to the repository
+     * @param message The message to be saved
+     */
+    public void saveMessage(Message message) {
+        messageRepository.save(message);
     }
 }

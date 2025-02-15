@@ -111,7 +111,6 @@ function updateUsersList(usersStatus) {
 }
 
 function displayNotification(notification) {
-    console.log(notification);
     const chatResultsElement = document.getElementById("chats");
     const chatItem = chatResultsElement.querySelector(`a[href="/chat?id=${notification.chatId}"]`);
     if (chatItem) {

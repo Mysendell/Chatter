@@ -62,7 +62,6 @@ public class WebController {
 
     @GetMapping("/home")
     public String home() {
-        String username = sessionService.getLoggedInUser();
         sessionService.requireLoggedInUser();
         return "home";
     }

@@ -12,6 +12,10 @@ import java.util.stream.Collectors;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Service responsible for managing notifications in the system.
+ * This service handles the creation, fetching, and marking of notifications related to user activity in chats.
+ */
 @Service
 public class NotificationService {
 
@@ -30,6 +34,11 @@ public class NotificationService {
         this.chatService = chatService;
     }
 
+    /**
+     * Creates a new notification for all offline users in a chat
+     * @param message The message triggering the notification
+     * @param chat The chat the notification happened in
+     */
     @Transactional
     public void createNotificationsForChat(Message message, Chat chat) {
         Set<User> users = chat.getUsers();
@@ -50,9 +59,16 @@ public class NotificationService {
         }
     }
 
+    /**
+     * Gets all unread notification from a chat
+     * @param username The user trying to retrieve the notifications
+     * @param chatId The chat they're trying to get the notifications from
+     * @return A list containing all notifications in that chat
+     */
     public List<NotificationDto> getUnreadNotifications(String username, int chatId) {
         User user = userService.getUserByUsername(username);
         Chat chat = chatService.getChatById(chatId);
+        chatService.userInChat(username, chatId);
         return notificationRepository.findByUserAndChatAndSeenFalse(user, chat)
                 .stream()
                 .map(notification -> new NotificationDto(
@@ -64,6 +80,11 @@ public class NotificationService {
 
     }
 
+    /**
+     * Mark all notification in a chat as seen by a certain user
+     * @param username The user who opened the chat and saw the notifications
+     * @param chatId The chat the user saw the notifications in
+     */
     public void markNotificationsAsSeen(String username, int chatId) {
         User user = userService.getUserByUsername(username);
         Chat chat = chatService.getChatById(chatId);
