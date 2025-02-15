@@ -37,26 +37,24 @@ public class UserService {
      * @param user A user object of the user being logged in / registred
      */
     public void Register(User user) {
+        String rawPassword = user.getPassword();
         if (userRepository.findByUsername(user.getUsername()).isEmpty()) {
-            String rawPassword = user.getPassword();
             user.setPassword(passwordEncoder.encode(rawPassword));
             userRepository.save(user);
 
             Log log = new Log(user.getUsername(), "Register");
             logRepository.save(log);
-
-            user.setPassword(rawPassword);
         }
-        login(user);
+        login(user, rawPassword);
     }
 
     /**
      * Logs a user in
      * @param user The user to be logged in
      */
-    public void login(User user) {
+    public void login(User user, String rawPassword) {
         sessionService.logout();
-        if (isValidUser(user.getUsername(), user.getPassword())) {
+        if (isValidUser(user.getUsername(), rawPassword)) {
             System.out.println("Login successful");
             sessionService.setLoggedInUser(user.getUsername());
             Log log = new Log(user.getUsername(), "Login");
